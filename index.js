@@ -100,6 +100,21 @@ let dashboardService = {
       SpinalEndpoint.addChild(nodeId, child, dashboardVariables.ENDPOINT_RELATION_NAME,
         SPINAL_RELATION_TYPE);
     });
+  },
+  async getAllDashboardContext() {
+    let res = [];
+    let graph = SpinalGraphService.getGraph();
+
+    let contexts = await graph.getChildren(["hasContext"]);
+
+    contexts.forEach(context => {
+      if (context.info.type.get() == dashboardVariables.DASHBOARD_CONTEXT_TYPE) {
+        res.push(context.info);
+      }
+    })
+
+    return res;
+
   }
 }
 
