@@ -9,7 +9,11 @@ const ENDPOINT_RELATION_NAME = "hasEndpoint";
 
 
 // Affiché par ordre (à ne pas Modifier, ou ajouter l'element à la fin)
-const GEOGRAPHIC_TPES = [{
+const GEOGRAPHIC_TYPES = [{
+    name: "Site",
+    type: ContextGeographicService.constants.SITE_TYPE
+  },
+  {
     name: "Building",
     type: ContextGeographicService.constants.BUILDING_TYPE
   },
@@ -37,6 +41,6 @@ export {
   DASHBOARD_CONTEXT,
   DASHBOARD_CONTEXT_TYPE,
   RELATION_NAME,
-  GEOGRAPHIC_TPES,
+  GEOGRAPHIC_TYPES,
   ENDPOINT_RELATION_NAME
 }
