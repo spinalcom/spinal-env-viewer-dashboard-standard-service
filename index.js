@@ -52,24 +52,40 @@ let dashboardService = {
 
   async getDashboardByType(contextId, type) {
 
-    // let TYPE = (SpinalGraphService.getInfo(selectedNodeId)).type.get();
-
-    var res = [];
-
     let children = await SpinalGraphService.getChildren(contextId,
       dashboardVariables.RELATION_NAME);
 
 
-    children.forEach(element => {
-      if (element.type.get() == type) {
-        res.push({
-          name: element.name.get(),
-          id: element.id.get()
-        });
+    let res = [];
+
+    // children.forEach(element => {
+    //   if (element.type.get() == type) {
+    //     res.push({
+    //       name: element.name.get(),
+    //       id: element.id.get()
+    //     });
+    //   }
+    // });
+
+    // return children.filter(el => el.type.get() == type);
+
+
+    // console.log(children.filter(el => {
+    //   console.log(el.type.get(), "===", type, el.type.get() === type)
+    //   el.type.get() === type
+    // }));
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (child.type.get() === type) {
+        res.push(child);
       }
-    });
+
+    }
 
     return res;
+
+
   },
   async hasDashBoard(selectedNodeId) {
     let children = await SpinalGraphService.getChildren(selectedNodeId,
