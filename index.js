@@ -24,11 +24,12 @@ let dashboardService = {
       new AbstractElement(contextName));
 
   },
-  createStandardDashBoard(parentId, name, type, attributes) {
-    let abstract = new AbstractElement(name);
+  createStandardDashBoard(contextId, dashboardName, dashboardType, attributes) {
+    let abstract = new AbstractElement(dashboardName);
 
     abstract.add_attr({
-      sensor: []
+      sensor: [],
+      connected: []
     });
 
     attributes.forEach(attr => {
@@ -37,20 +38,20 @@ let dashboardService = {
     });
 
     let abstractNode = SpinalGraphService.createNode({
-      name: name,
-      type: type
+      name: dashboardName,
+      type: dashboardType
     }, abstract);
 
     SpinalGraphService.addChildInContext(
-      parentId,
+      contextId,
       abstractNode,
-      parentId,
+      contextId,
       dashboardVariables.RELATION_NAME,
       SPINAL_RELATION_TYPE
     );
   },
 
-  async getDashboardByType(contextId, type) {
+  async getDashboardByType(contextId, dashboardType) {
 
     let children = await SpinalGraphService.getChildren(contextId,
       dashboardVariables.RELATION_NAME);
@@ -58,26 +59,9 @@ let dashboardService = {
 
     let res = [];
 
-    // children.forEach(element => {
-    //   if (element.type.get() == type) {
-    //     res.push({
-    //       name: element.name.get(),
-    //       id: element.id.get()
-    //     });
-    //   }
-    // });
-
-    // return children.filter(el => el.type.get() == type);
-
-
-    // console.log(children.filter(el => {
-    //   console.log(el.type.get(), "===", type, el.type.get() === type)
-    //   el.type.get() === type
-    // }));
-
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
-      if (child.type.get() === type) {
+      if (child.type.get() === dashboardType) {
         res.push(child);
       }
 
@@ -85,39 +69,68 @@ let dashboardService = {
 
     return res;
 
-
   },
-  async hasDashBoard(selectedNodeId) {
-    let children = await SpinalGraphService.getChildren(selectedNodeId,
+  async hasDashBoard(nodeId) {
+    let children = await SpinalGraphService.getChildren(nodeId,
       dashboardVariables.ENDPOINT_RELATION_NAME);
 
 
     return children.length > 0
   },
-  async linkToDashboard(nodeId, dashboardSelectedId) {
+  async linkToDashboard(nodeId, dashboardId) {
 
 
     if (await dashboardService.hasDashBoard(nodeId)) return;
 
-    console.log("has not dashboard")
-    let dashboardInfo = SpinalGraphService.getInfo(dashboardSelectedId);
+    let dashboardInfo = SpinalGraphService.getInfo(dashboardId);
 
     dashboardInfo.element.load().then(element => {
+
+
+      /** Ajouter id du node dans le dasboard */
+      if (!element.connected) {
+        element.add_attr({
+          connected: []
+        })
+      }
+      element.connected.push(nodeId);
+      /**       Fin             */
+
+
+      /** Attribuer id dashboard à l'element nodeId */
+      SpinalGraphService.getInfo(nodeId).element.load().then(el => {
+        if (!el.dashboardId) {
+          el.add_attr({
+            dashboardId: dashboardId
+          })
+        } else {
+          el.dashboardId.set(dashboardId);
+        }
+      })
+
+
+
+      /** Fin */
+
       let sensor = element.sensor.get();
 
+
+      // Pour chaque element du sensor ajouter un endpoint à la relation hasEndpoint
+
       sensor.forEach(attr => {
+
+        let endpoint = new SpinalEndpoint(
+          attr.name,
+          "SpinalEndpoint",
+          attr.value,
+          attr.unit,
+          attr.dataType
+        )
+
         let child = SpinalGraphService.createNode({
-            name: dashboardInfo.name.get(),
-            type: dashboardInfo.type.get()
-          },
-          new SpinalEndpoint(
-            attr.name,
-            "SpinalEndpoint",
-            attr.value,
-            attr.unit,
-            attr.dataType
-          )
-        );
+          name: dashboardInfo.name.get(),
+          type: dashboardInfo.type.get()
+        }, endpoint);
 
         SpinalGraphService.addChild(nodeId, child,
           dashboardVariables
