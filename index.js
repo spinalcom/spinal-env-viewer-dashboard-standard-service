@@ -82,63 +82,63 @@ let dashboardService = {
 
     if (await dashboardService.hasDashBoard(nodeId)) return;
 
+
     let dashboardInfo = SpinalGraphService.getInfo(dashboardId);
 
-    dashboardInfo.element.load().then(element => {
+    let element = await dashboardInfo.element.load();
 
 
-      /** Ajouter id du node dans le dasboard */
-      if (!element.connected) {
-        element.add_attr({
-          connected: []
-        })
-      }
-      element.connected.push(nodeId);
-      /**       Fin             */
+    /** Ajouter id du node dans le dasboard */
+    // if (!element.connected) {
+    //   element.add_attr({
+    //     connected: []
+    //   })
+    // }
+    // element.connected.push(nodeId);
+    /**       Fin             */
 
 
-      /** Attribuer id dashboard à l'element nodeId */
-      SpinalGraphService.getInfo(nodeId).element.load().then(el => {
-        if (!el.dashboardId) {
-          el.add_attr({
-            dashboardId: dashboardId
-          })
-        } else {
-          el.dashboardId.set(dashboardId);
-        }
-      })
+    SpinalGraphService.addChild(dashboardId, nodeId, dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+      SPINAL_RELATION_TYPE);
 
 
+    /** Attribuer id dashboard à l'element nodeId */
+    // SpinalGraphService.getInfo(nodeId).element.load().then(el => {
+    //   if (!el.dashboardId) {
+    //     el.add_attr({
+    //       dashboardId: dashboardId
+    //     })
+    //   } else {
+    //     el.dashboardId.set(dashboardId);
+    //   }
+    // })
+    /** Fin */
 
-      /** Fin */
-
-      let sensor = element.sensor.get();
+    let sensor = element.sensor.get();
 
 
-      // Pour chaque element du sensor ajouter un endpoint à la relation hasEndpoint
+    // Pour chaque element du sensor ajouter un endpoint à la relation hasEndpoint
 
-      sensor.forEach(attr => {
+    sensor.forEach(attr => {
 
-        let endpoint = new SpinalEndpoint(
-          attr.name,
-          "SpinalEndpoint",
-          attr.value,
-          attr.unit,
-          attr.dataType
-        )
+      let endpoint = new SpinalEndpoint(
+        attr.name,
+        "SpinalEndpoint",
+        attr.value,
+        attr.unit,
+        attr.dataType
+      )
 
-        let child = SpinalGraphService.createNode({
-          name: dashboardInfo.name.get(),
-          type: dashboardInfo.type.get()
-        }, endpoint);
+      let child = SpinalGraphService.createNode({
+        name: dashboardInfo.name.get(),
+        type: dashboardInfo.type.get()
+      }, endpoint);
 
-        SpinalGraphService.addChild(nodeId, child,
-          dashboardVariables
-          .ENDPOINT_RELATION_NAME,
-          SPINAL_RELATION_TYPE);
-      });
-    })
-
+      SpinalGraphService.addChild(nodeId, child,
+        dashboardVariables
+        .ENDPOINT_RELATION_NAME,
+        SPINAL_RELATION_TYPE);
+    });
 
   },
   async getAllDashboardContext() {
