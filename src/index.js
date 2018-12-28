@@ -126,6 +126,9 @@ let dashboardService = {
         "SpinalEndpoint",
         attr.value,
         attr.unit,
+        attr.dataType,
+        0,
+        30,
         attr.dataType
       )
 
