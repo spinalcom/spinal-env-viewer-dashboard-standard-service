@@ -79,11 +79,12 @@ let dashboardService = {
     });
   },
   linkToDashboard(contextId, nodeId, dashboardId) {
-    console.log("link To dashboard");
-    // dashboardService.unLinkToDashBoard(dashboardId, nodeId, () => {
+    // dashboardService.unLinkToDashBoard(dashboardId, nodeId, (el) => {
+
     let dashboardInfo = SpinalGraphService.getInfo(dashboardId);
 
     dashboardInfo.element.load().then(element => {
+      // if (!el) {
       SpinalGraphService.addChildInContext(
         dashboardId,
         nodeId,
@@ -91,6 +92,8 @@ let dashboardService = {
         dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
         SPINAL_RELATION_TYPE
       );
+
+      // }
 
       let sensor = element.sensor.get();
 
@@ -142,34 +145,83 @@ let dashboardService = {
   },
   unLinkToDashBoard(dashboardId, nodeId, callback) {
     console.log("unLinkMethod called");
-    dashboardService.hasDashBoard(nodeId).then(el => {
-      if (el) {
-        console.log("has Dashboard");
-        dashboardService.removeAllEndpoints(nodeId).then(() => {
-          console.log("now remove dashboard connected");
-          SpinalGraphService.removeChild(
-            dashboardId,
-            nodeId,
-            dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
-            SPINAL_RELATION_TYPE
-          ).then(
-            () => {
-              console.log("call callback");
+    // dashboardService.hasDashBoard(nodeId).then(el => {
+    //   if (el) {
+    //     console.log("has Dashboard");
+    //     dashboardService.removeAllEndpoints(nodeId).then(() => {
 
-              callback();
-            },
-            error => {
-              console.log("error", error);
-            }
-          );
-        });
-      } else {
-        console.log("has not dashboard");
-        callback();
-      }
-    });
+    //       console.log("now remove dashboard connected");
+    //       SpinalGraphService.removeChild(
+    //         dashboardId,
+    //         nodeId,
+    //         dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+    //         SPINAL_RELATION_TYPE
+    //       ).then(
+    //         (el) => {
+    //           console.log("call callback", el);
+
+    //           callback();
+    //         },
+    //         error => {
+    //           console.log("error", error);
+    //         }
+    //       );
+    //     });
+    //   } else {
+    //     console.log("has not dashboard");
+    //     callback();
+    //   }
+    // });
+    SpinalGraphService.getChildren(nodeId, [dashboardVariables.ENDPOINT_RELATION_NAME])
+      .then(el => {
+
+
+        if (el.length > 0) {
+          let oldDash = el[0].id.get();
+
+          console.log("has Dashboard");
+          dashboardService.removeAllEndpoints(nodeId).then(() => {
+
+            console.log("now remove dashboard connected");
+            // SpinalGraphService.removeChild(
+            //   dashboardId,
+            //   nodeId,
+            //   dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+            //   SPINAL_RELATION_TYPE
+            // ).then(
+            //   (el) => {
+            //     console.log("call callback", el);
+
+            //     callback();
+            //   },
+            //   error => {
+            //     console.log("error", error);
+            //   }
+            // );
+
+            SpinalGraphService.moveChild(oldDash, dashboardId, nodeId,
+              dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+              SPINAL_RELATION_TYPE).then((el) => {
+              if (el) {
+                console.log("before callback", el);
+
+                callback(true);
+              }
+            })
+
+          });
+
+        } else {
+          callback(false);
+        }
+
+
+
+
+      })
   },
   removeAllEndpoints(nodeId) {
+
     console.log("remove all endpoints called");
     return SpinalGraphService.getChildren(nodeId, [
       dashboardVariables.ENDPOINT_RELATION_NAME
