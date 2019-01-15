@@ -4,10 +4,16 @@ import ContextGeographicService from "spinal-env-viewer-context-geographic-servi
 const DASHBOARD_CONTEXT = "Dashboard Standard";
 const DASHBOARD_CONTEXT_TYPE = "dashboardContext";
 const RELATION_NAME = "hasDashBoard";
-const ENDPOINT_RELATION_NAME = "hasEndpoint";
-const DASHBOARD_TO_ELEMENT_RELATION = "connected";
+const ENDPOINT_RELATION_NAME = "hasDashEndpoint";
+const DASHBOARD_TO_ELEMENT_RELATION = "hasConnected";
 
-
+const CALCULATION_RULES = Object.freeze({
+  sum: 0,
+  average: 1,
+  max: 2,
+  min: 3,
+  reference: 4
+})
 
 // Affiché par ordre (à ne pas Modifier, ou ajouter l'element à la fin)
 const GEOGRAPHIC_TYPES = [{
@@ -38,11 +44,14 @@ const GEOGRAPHIC_TYPES = [{
 ]
 
 
+
+
 export {
   DASHBOARD_CONTEXT,
   DASHBOARD_CONTEXT_TYPE,
   RELATION_NAME,
   GEOGRAPHIC_TYPES,
   ENDPOINT_RELATION_NAME,
-  DASHBOARD_TO_ELEMENT_RELATION
+  DASHBOARD_TO_ELEMENT_RELATION,
+  CALCULATION_RULES
 }
