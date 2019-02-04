@@ -4,10 +4,6 @@ import {
   SpinalGraphService
 } from "spinal-env-viewer-graph-service";
 
-// import {
-//   SpinalEndpoint
-// } from "spinal-models-bmsNetwork";
-
 import {
   SpinalBmsEndpoint
 } from "spinal-model-bmsnetwork";
@@ -83,39 +79,33 @@ let dashboardService = {
     });
   },
   linkToDashboard(contextId, nodeId, dashboardId) {
-    dashboardService.unLinkToDashBoard(dashboardId, nodeId, (el) => {
+    this.hasDashBoard(nodeId).then(async d => {
+      if (d) await this.unLinkToDashBoard(nodeId);
 
       let dashboardInfo = SpinalGraphService.getInfo(dashboardId);
 
       dashboardInfo.element.load().then(element => {
-        if (!el) {
-          SpinalGraphService.addChildInContext(
-            dashboardId,
-            nodeId,
-            contextId,
-            dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
-            SPINAL_RELATION_TYPE
-          );
+        SpinalGraphService.addChildInContext(
+          dashboardId,
+          nodeId,
+          contextId,
+          dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+          SPINAL_RELATION_TYPE
+        );
 
-        }
 
         let sensor = element.sensor.get();
 
         sensor.forEach(attr => {
-          // let endpoint = new SpinalEndpoint(
-          //   attr.name,
-          //   "SpinalEndpoint",
-          //   attr.value,
-          //   attr.unit,
-          //   attr.dataType,
-          //   0,
-          //   30,
-          //   attr.dataType
-          // );
 
-          let endpoint = new SpinalBmsEndpoint(attr.name,
-            "SpinalEndpoint_Path", attr.value, attr.unit, attr.dataType,
-            attr.type);
+          let endpoint = new SpinalBmsEndpoint(
+            attr.name,
+            "SpinalEndpoint_Path",
+            attr.value,
+            attr.unit,
+            attr.dataType,
+            attr.type
+          );
 
           let child = SpinalGraphService.createNode({
               name: attr.name,
@@ -132,7 +122,10 @@ let dashboardService = {
           );
         });
       });
-    });
+
+    })
+
+
   },
   getAllDashboardContext() {
     let graph = SpinalGraphService.getGraph();
@@ -151,37 +144,24 @@ let dashboardService = {
       return res;
     });
   },
-  unLinkToDashBoard(dashboardId, nodeId, callback) {
-    SpinalGraphService.getChildren(nodeId, [dashboardVariables.ENDPOINT_RELATION_NAME])
-      .then(el => {
+  unLinkToDashBoard(nodeId, callback) {
 
+    this._getParent(nodeId, dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION)
+      .then(oldDash => {
+        dashboardService.removeAllEndpoints(nodeId).then(() => {
 
-        if (el.length > 0) {
-          let oldDash = el[0].id.get();
-          dashboardService.removeAllEndpoints(nodeId).then(() => {
+          SpinalGraphService.removeChild(oldDash, nodeId,
+            dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+            SPINAL_RELATION_TYPE).then(
+            el => {
+              if (callback) callback(el);
+            });
 
-            SpinalGraphService.moveChild(oldDash, dashboardId,
-              nodeId,
-              dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
-              SPINAL_RELATION_TYPE).then((el) => {
-              if (el) {
-                callback(true);
-              }
-            })
-
-          });
-
-        } else {
-          callback(false);
-        }
-
-
-
-
+        });
       })
+
   },
   removeAllEndpoints(nodeId) {
-
     return SpinalGraphService.getChildren(nodeId, [
       dashboardVariables.ENDPOINT_RELATION_NAME
     ]).then(endpoints => {
@@ -195,6 +175,42 @@ let dashboardService = {
       }
       return;
     });
+  },
+  addCalculationRule(nodeId, endpointType, rule, reference = null) {
+    SpinalGraphService.getChildren(
+      nodeId,
+      dashboardVariables.ENDPOINT_RELATION_NAME
+    ).then(endpoints => {
+      let endpoint;
+      for (let index = 0; index < endpoints.length; index++) {
+        const element = endpoints[index];
+        if (element.id.get() === endpointType || element.type.get() ===
+          endpointType) {
+          endpoint = SpinalGraphService.getRealNode(element.id.get());
+        }
+
+      }
+
+      if (endpoint) {
+        if (endpoint.info.dash_cal_rule)
+          endpoint.info.rem_attr("dash_cal_rule");
+
+        endpoint.info.add_attr("dash_cal_rule", {
+          rule: rule,
+          ref: reference
+        });
+      }
+    });
+  },
+  _getParent(nodeId, relationName) {
+    let node = SpinalGraphService.getRealNode(nodeId);
+    if (node.parents[relationName]) {
+      return node.parents[relationName][0].load().then(async ref => {
+        let parent = await ref.parent.load();
+        return parent.info.id.get();
+      })
+    }
+
   }
 };
 
@@ -202,3 +218,52 @@ export {
   dashboardService,
   dashboardVariables
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+unLinkToDashBoard(dashboardId, nodeId, callback) {
+    SpinalGraphService.getChildren(nodeId, [
+      dashboardVariables.ENDPOINT_RELATION_NAME
+    ]).then(el => {
+      if (el.length > 0) {
+        let oldDash = el[0].id.get();
+        dashboardService.removeAllEndpoints(nodeId).then(() => {
+          // SpinalGraphService.moveChild(
+          //   oldDash,
+          //   dashboardId,
+          //   nodeId,
+          //   dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
+          //   SPINAL_RELATION_TYPE
+          // ).then(el => {
+          //   if (el) {
+          //     callback(true);
+          //   }
+          // });
+
+          SpinalGraphService.removeChild(oldDash, nodeId,
+            dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION).then(
+            el => {
+              callback(el);
+            });
+
+        });
+      } else {
+        callback(false);
+      }
+    });
+  }
+
+*/
