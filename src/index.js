@@ -202,6 +202,58 @@ let dashboardService = {
       }
     });
   },
+  //a modifier
+  editDashboard(dashboardId, newName, NewSensor) {
+    let dashboardNode = SpinalGraphService.getRealNode(dashboardId);
+    dashboardNode.info.name.set(newName);
+
+    dashboardNode.element.load().then(dashBoardElement => {
+      dashBoardElement.name.set(newName);
+      let sensor = dashBoardElement.sensor.get();
+
+      let difference = this._getDifferenceBetweenTwoArray(NewSensor,
+        sensor);
+
+      console.log("difference", difference);
+
+
+      difference.forEach(el => {
+        if (!sensor.includes(el)) {
+          dashBoardElement.sensor.push(el);
+        } else if (!NewSensor.includes(el)) {
+          dashBoardElement.sensor.splice(sensor.indexOf(el), 1);
+        }
+      })
+
+    })
+
+  },
+  addReferenceToBimObject(bimObjectId, referenceId, endpointType) {
+    // SpinalGraphService.createNode()
+    // let node = SpinalGraphService.getInfo(referenceId);
+    // node.element.load().then(element => {
+    //   if (element.referenceOf) element.referenceOf.set(endpointType);
+    //   else element.add_attr({
+    //     referenceOf: endpointType
+    //   })
+    // })
+
+    let node = SpinalGraphService.getRealNode(bimObjectId);
+
+    if (!node.info.reference) node.info.add_attr({
+      reference: {}
+    });
+    if (!node.info.reference[endpointType]) {
+      node.info.reference.add_attr(endpointType, referenceId);
+      return;
+    }
+
+    node.info.reference[endpointType].set(referenceId);
+    return;
+
+
+    // return SpinalGraphService.addChild(bimObjectId, , )
+  },
   _getParent(nodeId, relationName) {
     let node = SpinalGraphService.getRealNode(nodeId);
     if (node.parents[relationName]) {
@@ -210,6 +262,14 @@ let dashboardService = {
         return parent.info.id.get();
       })
     }
+
+  },
+  _getDifferenceBetweenTwoArray(array1, array2) {
+    let full = array1.concat(array2);
+
+    return full.filter((el) => {
+      return full.indexOf(el) === full.lastIndexOf(el);
+    })
 
   }
 };
