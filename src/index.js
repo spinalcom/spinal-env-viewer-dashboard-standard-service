@@ -1,6 +1,6 @@
 import * as dashboardVariables from "./globalVariables";
 import {
-  SPINAL_RELATION_TYPE,
+  SPINAL_RELATION_LST_PTR_TYPE,
   SpinalGraphService
 } from "spinal-env-viewer-graph-service";
 
@@ -11,6 +11,8 @@ import {
 const {
   AbstractElement
 } = require("spinal-models-building-elements");
+
+
 
 let dashboardService = {
   createStandardDashBoardContext(contextName) {
@@ -49,7 +51,7 @@ let dashboardService = {
       abstractNode,
       contextId,
       dashboardVariables.RELATION_NAME,
-      SPINAL_RELATION_TYPE
+      SPINAL_RELATION_LST_PTR_TYPE
     );
   },
 
@@ -90,7 +92,7 @@ let dashboardService = {
           nodeId,
           contextId,
           dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
-          SPINAL_RELATION_TYPE
+          SPINAL_RELATION_LST_PTR_TYPE
         );
 
 
@@ -118,7 +120,7 @@ let dashboardService = {
             nodeId,
             child,
             dashboardVariables.ENDPOINT_RELATION_NAME,
-            SPINAL_RELATION_TYPE
+            SPINAL_RELATION_LST_PTR_TYPE
           );
         });
       });
@@ -152,7 +154,7 @@ let dashboardService = {
 
           SpinalGraphService.removeChild(oldDash, nodeId,
             dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
-            SPINAL_RELATION_TYPE).then(
+            SPINAL_RELATION_LST_PTR_TYPE).then(
             el => {
               if (callback) callback(el);
             });
@@ -170,7 +172,7 @@ let dashboardService = {
           nodeId,
           endpoints[i].id.get(),
           dashboardVariables.ENDPOINT_RELATION_NAME,
-          SPINAL_RELATION_TYPE
+          SPINAL_RELATION_LST_PTR_TYPE
         );
       }
       return;
@@ -306,7 +308,7 @@ unLinkToDashBoard(dashboardId, nodeId, callback) {
           //   dashboardId,
           //   nodeId,
           //   dashboardVariables.DASHBOARD_TO_ELEMENT_RELATION,
-          //   SPINAL_RELATION_TYPE
+          //   SPINAL_RELATION_LST_PTR_TYPE
           // ).then(el => {
           //   if (el) {
           //     callback(true);
